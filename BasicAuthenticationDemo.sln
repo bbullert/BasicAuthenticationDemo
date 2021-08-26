@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.31321.278
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BasicAuthenticationDemo", "BasicAuthenticationDemo\BasicAuthenticationDemo.csproj", "{13BDA9CA-7A40-4677-9CA4-66C07C6FD263}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataAccess", "DataAccess\DataAccess.csproj", "{EA3EEAD5-33B5-4CB7-BD0D-AF076D2FBFD5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{13BDA9CA-7A40-4677-9CA4-66C07C6FD263}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{13BDA9CA-7A40-4677-9CA4-66C07C6FD263}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{13BDA9CA-7A40-4677-9CA4-66C07C6FD263}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EA3EEAD5-33B5-4CB7-BD0D-AF076D2FBFD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EA3EEAD5-33B5-4CB7-BD0D-AF076D2FBFD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EA3EEAD5-33B5-4CB7-BD0D-AF076D2FBFD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EA3EEAD5-33B5-4CB7-BD0D-AF076D2FBFD5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
