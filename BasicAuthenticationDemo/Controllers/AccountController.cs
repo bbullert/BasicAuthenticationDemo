@@ -1,4 +1,5 @@
 ﻿using BasicAuthenticationDemo.Models;
+using BasicAuthenticationDemo.Services.Validation;
 using DataAccess.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,15 +16,18 @@ namespace BasicAuthenticationDemo.Controllers
         private readonly ILogger<AccountController> logger;
         private readonly UserManager<AppUser> userManager;
         private readonly SignInManager<AppUser> signInManager;
+        private readonly AppIdentityErrorDescriber appIdentityErrorDescriber;
 
         public AccountController(
             ILogger<AccountController> logger,
             UserManager<AppUser> userManager,
-            SignInManager<AppUser> signInManager)
+            SignInManager<AppUser> signInManager,
+            AppIdentityErrorDescriber appIdentityErrorDescriber)
         {
             this.logger = logger;
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.appIdentityErrorDescriber = appIdentityErrorDescriber;
         }
 
         public IActionResult Login()
@@ -57,7 +61,7 @@ namespace BasicAuthenticationDemo.Controllers
                 }
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid username or password");
+            ModelState.AddModelError(string.Empty, appIdentityErrorDescriber.InvalidUserNameOrPassword().Description);
 
             return View(model);
         }
@@ -82,6 +86,8 @@ namespace BasicAuthenticationDemo.Controllers
                 var result = await userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
+                    // todo: send email confirmation
+
                     return RedirectToAction("Login");
                 }
             }

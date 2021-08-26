@@ -1,3 +1,4 @@
+using BasicAuthenticationDemo.Services.Validation;
 using DataAccess;
 using DataAccess.Entities;
 using Microsoft.AspNetCore.Builder;
@@ -41,6 +42,7 @@ namespace BasicAuthenticationDemo
                 options.Password.RequireDigit = true;
                 options.Password.RequireNonAlphanumeric = true;
             })
+            .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
@@ -50,6 +52,8 @@ namespace BasicAuthenticationDemo
             });
 
             services.AddControllersWithViews();
+
+            services.AddSingleton<AppIdentityErrorDescriber>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
