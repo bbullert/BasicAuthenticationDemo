@@ -3,10 +3,13 @@ using BasicAuthenticationDemo.Services.Validation;
 using DataAccess.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using NETCore.MailKit.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace BasicAuthenticationDemo.Controllers
@@ -17,17 +20,20 @@ namespace BasicAuthenticationDemo.Controllers
         private readonly UserManager<AppUser> userManager;
         private readonly SignInManager<AppUser> signInManager;
         private readonly AppIdentityErrorDescriber appIdentityErrorDescriber;
+        private readonly IEmailService emailService;
 
         public AccountController(
             ILogger<AccountController> logger,
             UserManager<AppUser> userManager,
             SignInManager<AppUser> signInManager,
-            AppIdentityErrorDescriber appIdentityErrorDescriber)
+            AppIdentityErrorDescriber appIdentityErrorDescriber,
+            IEmailService emailService)
         {
             this.logger = logger;
             this.userManager = userManager;
             this.signInManager = signInManager;
             this.appIdentityErrorDescriber = appIdentityErrorDescriber;
+            this.emailService = emailService;
         }
 
         public IActionResult Login()
@@ -86,7 +92,7 @@ namespace BasicAuthenticationDemo.Controllers
                 var result = await userManager.CreateAsync(user, model.Password);
                 if (result.Succeeded)
                 {
-                    // todo: send email confirmation
+                    await SendEmailConfirmationAsync(user);
 
                     return RedirectToAction("Login");
                 }
@@ -189,6 +195,52 @@ namespace BasicAuthenticationDemo.Controllers
             }
 
             return Json(true);
+        }
+
+        public async Task<IActionResult> ResendEmailConfirmationAsync()
+        {
+            var user = await userManager.GetUserAsync(User);
+
+            if (user != null)
+            {
+                await SendEmailConfirmationAsync(user);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        public async Task SendEmailConfirmationAsync(AppUser user)
+        {
+            string token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            string code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+            string url = Url.Action(
+                "ConfirmEmail",
+                "Account",
+                new { userId = user.Id, code },
+                Request.Scheme);
+
+            await emailService.SendAsync(
+                user.Email,
+                "Email verification",
+                $"<a href=\"{url}\">Verify your email</a>",
+                true);
+        }
+
+        public async Task<IActionResult> ConfirmEmailAsync(string userId, string code)
+        {
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(code))
+            {
+                var user = await userManager.FindByIdAsync(userId);
+                var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+
+                if (user != null)
+                {
+                    await userManager.ConfirmEmailAsync(user, token);
+                }
+            }
+
+            return RedirectToAction("Index", "Home");
         }
     }
 }
