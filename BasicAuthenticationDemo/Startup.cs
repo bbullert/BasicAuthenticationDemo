@@ -42,6 +42,8 @@ namespace BasicAuthenticationDemo
                 options.Password.RequireDigit = true;
                 options.Password.RequireNonAlphanumeric = true;
             })
+            .AddUserValidator<AppUserValidator<AppUser>>()
+            .AddPasswordValidator<AppPasswordValidator<AppUser>>()
             .AddErrorDescriber<AppIdentityErrorDescriber>()
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();

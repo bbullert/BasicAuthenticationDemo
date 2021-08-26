@@ -94,5 +94,94 @@ namespace BasicAuthenticationDemo.Controllers
 
             return View(model);
         }
+
+        public async Task<IActionResult> ValidateUserNameAsync(string username)
+        {
+            var validators = userManager.UserValidators;
+
+            foreach (var validator in validators)
+            {
+                var user = new AppUser { UserName = username };
+                var result = await validator.ValidateAsync(userManager, user);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        if (error.Code.ToLower().Contains(nameof(username)))
+                        {
+                            ModelState.AddModelError(nameof(username), error.Description);
+                        }
+                    }
+                }
+            }
+
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
+
+            foreach (var error in errors)
+            {
+                return Json(error.ErrorMessage);
+            }
+
+            return Json(true);
+        }
+
+        public async Task<IActionResult> ValidateEmailAsync(string email)
+        {
+            var validators = userManager.UserValidators;
+
+            foreach (var validator in validators)
+            {
+                var user = new AppUser { Email = email };
+                var result = await validator.ValidateAsync(userManager, user);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        if (error.Code.ToLower().Contains(nameof(email)))
+                        {
+                            ModelState.AddModelError(nameof(email), error.Description);
+                        }
+                    }
+                }
+            }
+
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
+
+            foreach (var error in errors)
+            {
+                return Json(error.ErrorMessage);
+            }
+
+            return Json(true);
+        }
+
+        public async Task<IActionResult> ValidatePasswordAsync(string password)
+        {
+            var validators = userManager.PasswordValidators;
+
+            foreach (var validator in validators)
+            {
+                var result = await validator.ValidateAsync(userManager, null, password);
+
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(nameof(password), error.Description);
+                    }
+                }
+            }
+
+            var errors = ModelState.Values.SelectMany(v => v.Errors);
+
+            foreach (var error in errors)
+            {
+                return Json(error.ErrorMessage);
+            }
+
+            return Json(true);
+        }
     }
 }
