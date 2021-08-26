@@ -9,6 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using NETCore.MailKit.Extensions;
+using NETCore.MailKit.Infrastructure.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +30,8 @@ namespace BasicAuthenticationDemo
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<AppIdentityErrorDescriber>();
+
             services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseSqlServer(Configuration.GetConnectionString("Default"));
@@ -55,7 +59,10 @@ namespace BasicAuthenticationDemo
 
             services.AddControllersWithViews();
 
-            services.AddSingleton<AppIdentityErrorDescriber>();
+            var mailKitOptions = Configuration.GetSection("Email").Get<MailKitOptions>();
+            services.AddMailKit(options => options.UseMailKit(mailKitOptions));
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
