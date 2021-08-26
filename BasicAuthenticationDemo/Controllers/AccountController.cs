@@ -95,6 +95,13 @@ namespace BasicAuthenticationDemo.Controllers
             return View(model);
         }
 
+        public async Task<IActionResult> LogoutAsync()
+        {
+            await signInManager.SignOutAsync();
+
+            return RedirectToAction("Index", "Home");
+        }
+
         public async Task<IActionResult> ValidateUserNameAsync(string username)
         {
             var validators = userManager.UserValidators;
