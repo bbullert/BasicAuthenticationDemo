@@ -21,10 +21,8 @@ namespace BasicAuthenticationDemo.Models
         [Display(Name = "Confirm password")]
         public string ConfirmPassword { get; set; }
 
-        //[Required]
         public string Id { get; set; }
 
-        //[Required]
         public string Token { get; set; }
     }
 }

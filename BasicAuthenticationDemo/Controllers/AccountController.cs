@@ -9,6 +9,7 @@ using NETCore.MailKit.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -323,6 +324,91 @@ namespace BasicAuthenticationDemo.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult ExternalLogin(string provider)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Account");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return new ChallengeResult(provider, properties);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ExternalLoginCallbackAsync()
+        {
+            var info = await signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction("Register");
+            }
+
+            var result = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: false, bypassTwoFactor: true);
+
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            else if (result.IsLockedOut)
+            {
+                return RedirectToAction("ForgotPassword");
+            }
+            else
+            {
+                ViewBag.Provider = info.LoginProvider;
+
+                string userName = info.Principal.FindFirstValue(ClaimTypes.Name),
+                    email = info.Principal.FindFirstValue(ClaimTypes.Email);
+
+                return View("ExternalLoginConfirmation", new ExternalLoginViewModel { Email = email });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ExternalLoginConfirmationAsync(ExternalLoginViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var info = await signInManager.GetExternalLoginInfoAsync();
+                if (info == null)
+                {
+                    return RedirectToAction("Register");
+                }
+
+                IdentityResult result;
+                var user = await userManager.FindByEmailAsync(model.Email);
+                if (user == null)
+                {
+                    user = new AppUser
+                    {
+                        UserName = model.UserName,
+                        Email = model.Email
+                    };
+
+                    result = await userManager.CreateAsync(user);
+                    if (result.Succeeded)
+                    {
+                        result = await userManager.AddLoginAsync(user, info);
+                        if (result.Succeeded)
+                        {
+                            await SendEmailConfirmationAsync(user);
+                        }
+                    }
+                }
+
+                await signInManager.SignInAsync(user, isPersistent: false);
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ExternalLoginAccessDenied()
+        {
+            return View();
         }
     }
 }

@@ -52,17 +52,27 @@ namespace BasicAuthenticationDemo
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+            services.AddControllersWithViews();
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.ExpireTimeSpan = new TimeSpan(100 * 365, 0, 0, 0);
             });
 
-            services.AddControllersWithViews();
-
             var mailKitOptions = Configuration.GetSection("Email").Get<MailKitOptions>();
             services.AddMailKit(options => options.UseMailKit(mailKitOptions));
 
-            
+            services.AddAuthentication().AddFacebook(options =>
+            {
+                options.AppId = Configuration["Authentication:Facebook:AppId"];
+                options.AppSecret = Configuration["Authentication:Facebook:AppSecret"];
+                options.AccessDeniedPath = "/Account/ExternalLoginAccessDenied";
+            }).AddGoogle(options =>
+            {
+                options.ClientId = Configuration["Authentication:Google:ClientId"];
+                options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                options.AccessDeniedPath = "/Account/ExternalLoginAccessDenied";
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
