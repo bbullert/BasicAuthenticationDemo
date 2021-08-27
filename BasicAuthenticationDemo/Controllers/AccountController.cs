@@ -242,5 +242,87 @@ namespace BasicAuthenticationDemo.Controllers
 
             return RedirectToAction("Index", "Home");
         }
+
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPasswordAsync(ForgotPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.FindByNameAsync(model.UserName) ??
+                       await userManager.FindByEmailAsync(model.UserName);
+
+                if (user != null)
+                {
+                    string token = await userManager.GeneratePasswordResetTokenAsync(user);
+                    string code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(token));
+
+                    string url = Url.Action(
+                        "ResetPassword",
+                        "Account",
+                        new { userId = user.Id, code },
+                        Request.Scheme);
+
+                    await emailService.SendAsync(
+                        user.Email,
+                        "Reset password",
+                        $"<a href=\"{url}\">Reset your password</a>",
+                        true);
+
+                    return RedirectToAction("Login");
+                }
+
+                ModelState.AddModelError(nameof(model.UserName), appIdentityErrorDescriber.UserNotExists().Description);
+            }
+
+            return View(model);
+        }
+
+        public IActionResult ResetPassword(string userId, string code)
+        {
+            if (!string.IsNullOrEmpty(userId) && !string.IsNullOrEmpty(code))
+            {
+                var token = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
+                var model = new ResetPasswordViewModel
+                {
+                    Id = userId,
+                    Token = token
+                };
+
+                return View(model);
+            }
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPasswordAsync(ResetPasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.FindByIdAsync(model.Id);
+
+                if (user != null)
+                {
+                    var result = await userManager.ResetPasswordAsync(
+                        user,
+                        model.Token,
+                        model.Password);
+
+                    if (result.Succeeded)
+                    {
+                        return RedirectToAction("Login");
+                    }
+                }
+            }
+
+            return View(model);
+        }
     }
 }
