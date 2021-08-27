@@ -8,7 +8,7 @@ namespace BasicAuthenticationDemo.Services.Validation
 {
     public class AppIdentityErrorDescriber : IdentityErrorDescriber
     {
-        public virtual IdentityError InvalidUserName()
+        public override IdentityError InvalidUserName(string username)
         {
             return new IdentityError
             {
