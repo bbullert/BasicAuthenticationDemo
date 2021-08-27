@@ -8,7 +8,6 @@
             <form asp-action="ExternalLoginConfirmation" method="post">
                 <h4>Enter an email to associate your <strong>@ViewBag.Provider</strong> account.</h4>
                 <hr />
-                <div asp-validation-summary="All" class="text-danger"></div>
                 <div class="form-group">
                     <label asp-for="UserName"></label>
                     <input asp-for="UserName" class="form-control" />
